@@ -1,8 +1,9 @@
-var express = require('express');
-var bodyParser  = require('body-parser');
-var cors = require('cors');
-var app = express();
-var port = 3000;
+const express = require('express');
+const bodyParser  = require('body-parser');
+const cors = require('cors');
+const shell = require('node-powershell');
+const app = express();
+const port = 3000;
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({
@@ -12,6 +13,11 @@ app.use(bodyParser.urlencoded({
 app.use(cors());
 app.use(bodyParser.json());
 
+let ps = new shell({
+	executionPolicy: 'Bypass',
+	noProfile: true
+  });
+
 
 
 app.get('/', function(req, res) {
@@ -19,6 +25,39 @@ app.get('/', function(req, res) {
 	console.log('GET received on Route: /');
 
 	res.sendFile(__dirname + '/public/events.html');
+
+});
+
+
+app.get('/events', function(req, res){
+	 
+	ps.addCommand('.\\getEvents.ps1 99');
+	ps.invoke()
+	.then(output => {
+	//console.log(output);
+
+	var events = JSON.parse(output);
+	//ps.dispose();
+
+	console.log('Parsed Object ----------------\n');
+
+	for (let i = 0; i < events.length; i++) {
+
+		console.log('MachineName: ' + events[i].MachineName + ' appId: ' + events[i].Source + ' eventId: ' + events[i].EventID);
+		console.log('    message: ' + events[i].Message);
+		console.log();
+		
+	}
+
+	res.json(events);
+
+	})
+	.catch(err => {
+		console.log(err);
+		ps.dispose();
+		res.json('Error');
+	});
+
 
 });
 
@@ -38,18 +77,6 @@ app.get('/newevent/:appId/:eventId/:message', function(req, res) {
 	res.json('OK');
 });
 
-
-app.get('/formdata/:data', function(req, res) {
-  
-	console.log('GET received on Route: /formdata/');
-
-	var formData = req.params.data;
-	  
-	console.log(formData);
-
-	 res.send(JSON.stringify("OK"));
-
-});
 
 app.post('/', function(req, res) {
   

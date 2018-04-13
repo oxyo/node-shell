@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Create new eventlog for your app.
 .DESCRIPTION
@@ -11,7 +11,8 @@ Create new eventlog for your app.
     Param(
         [Parameter(Mandatory=$True,Position=0)] [string]$appId, 
         [Parameter(Mandatory=$True,Position=1)] [int]$eventId, 
-        [Parameter(Mandatory=$True,Position=2)] [string]$message
+        [Parameter(Mandatory=$True,Position=2)] [string]$message,
+        [Parameter(Mandatory=$false,Position=3)] [string]$type = "Warning"
     )
 
 
@@ -21,13 +22,13 @@ function newEvent ($appId, $eventId, $message) {
     
     if ($exist) {
     
-        Write-EventLog Application -EntryType Warning -Source $appId -Message $message -EventId $eventId    
+        Write-EventLog Application -EntryType $type -Source $appId -Message $message -EventId $eventId    
 
     } else {
     
         New-EventLog -Source $appId -LogName Application
 
-        Write-EventLog Application -EntryType Warning -Source $appId -Message $message -EventId $eventId  
+        Write-EventLog Application -EntryType $type -Source $appId -Message $message -EventId $eventId  
         
         Write-Host "$appId Events Source created successfully"          
     }

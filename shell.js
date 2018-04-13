@@ -6,14 +6,27 @@ let ps = new shell({
   noProfile: true
 });
  
-ps.addCommand('echo node-powershell');
-ps.addCommand('hostname');
-
+ps.addCommand('.\\getEvents.ps1 99');
+//ps.addCommand('hostname');
 
 ps.invoke()
 .then(output => {
   console.log(output);
-  //ps.dispose();
+
+  var events = JSON.parse(output);
+
+  console.log('Parsed Object ----------------\n');
+
+  for (let i = 0; i < events.length; i++) {
+
+    console.log('MachineName: ' + events[i].MachineName + ' appId: ' + events[i].Source + ' eventId: ' + events[i].EventID);
+    console.log('    message: ' + events[i].Message);
+    console.log();
+    
+  }
+
+
+  ps.dispose();
 })
 .catch(err => {
   console.log(err);
